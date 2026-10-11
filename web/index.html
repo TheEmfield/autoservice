@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Автосервис</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f9; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .hidden { display: none; }
+        input, select, button { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+        button.danger { background: #dc3545; width: auto; padding: 4px 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #f8f9fa; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .tab { padding: 10px 20px; background: #e9ecef; border: none; cursor: pointer; border-radius: 4px; width: auto; }
+        .tab.active { background: #007bff; color: white; }
+        .form-row { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 15px; }
+        .form-row > * { flex: 1; margin: 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="login-view">
+            <h2>Вход в систему</h2>
+            <input type="text" id="username" placeholder="Логин (admin или operator)">
+            <input type="password" id="password" placeholder="Пароль (123)">
+            <button onclick="login()">Войти</button>
+        </div>
+
+        <div id="app-view" class="hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>Автосервис (<span id="user-role"></span>)</h2>
+                <button onclick="logout()" style="width:auto; background:#6c757d;">Выйти</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('cars')">Автомобили</button>
+                <button class="tab" onclick="showTab('masters')">Мастера</button>
+                <button class="tab" onclick="showTab('services')">Услуги</button>
+                <button class="tab" onclick="showTab('works')">Журнал работ</button>
+                <button class="tab" onclick="showTab('reports')">Отчёты</button>
+            </div>
+
+            <!-- АВТОМОБИЛИ -->
+            <div id="tab-cars" class="tab-content">
+                <h3>Справочник автомобилей</h3>
+                <div id="admin-cars" class="hidden form-row">
+                    <input type="text" id="car-num" placeholder="Номер">
+                    <input type="text" id="car-mark" placeholder="Марка">
+                    <input type="text" id="car-color" placeholder="Цвет">
+                    <select id="car-foreign"><option value="0">Отечественный</option><option value="1">Иномарка</option></select>
+                    <button onclick="addCar()" style="width:auto;">Добавить</button>
+                </div>
+                <table id="cars-table"><thead><tr><th>Номер</th><th>Марка</th><th>Цвет</th><th>Тип</th><th>Действия</th></tr></thead><tbody></tbody></table>
+            </div>
+
+            <!-- МАСТЕРА -->
+            <div id="tab-masters" class="tab-content hidden">
+                <h3>Справочник мастеров</h3>
+                <div id="admin-masters" class="hidden form-row">
+                    <input type="text" id="master-name" placeholder="ФИО Мастера">
+                    <button onclick="addMaster()" style="width:auto;">Добавить</button>
+                </div>
+                <table id="masters-table"><thead><tr><th>ID</th><th>ФИО</th><th>Действия</th></tr></thead><tbody></tbody></table>
+            </div>
+
+            <!-- УСЛУГИ -->
+            <div id="tab-services" class="tab-content hidden">
+                <h3>Справочник услуг</h3>
+                <div id="admin-services" class="hidden form-row">
+                    <input type="text" id="serv-name" placeholder="Название">
+                    <input type="number" id="serv-cost-our" placeholder="Цена (Отеч.)">
+                    <input type="number" id="serv-cost-for" placeholder="Цена (Ином.)">
+                    <button onclick="addService()" style="width:auto;">Добавить</button>
+                </div>
+                <table id="services-table"><thead><tr><th>Название</th><th>Цена (Отеч.)</th><th>Цена (Ином.)</th><th>Действия</th></tr></thead><tbody></tbody></table>
+            </div>
+
+            <!-- ЖУРНАЛ РАБОТ -->
+            <div id="tab-works" class="tab-content hidden">
+                <h3>Журнал работ</h3>
+                <div class="form-row">
+                    <input type="date" id="work-date">
+                    <select id="work-master"><option value="">Выберите мастера</option></select>
+                    <select id="work-car"><option value="">Выберите авто</option></select>
+                    <select id="work-service"><option value="">Выберите услугу</option></select>
+                    <button onclick="addWork()" style="width:auto;">Назначить</button>
+                </div>
+                <table id="works-table"><thead><tr><th>Дата</th><th>Мастер (ID)</th><th>Авто (ID)</th><th>Услуга (ID)</th><th>Действия</th></tr></thead><tbody></tbody></table>
+            </div>
+
+            <!-- ОТЧЕТЫ -->
+            <div id="tab-reports" class="tab-content hidden">
+                <h3>Отчёты</h3>
+                <div class="form-row">
+                    <div>
+                        <label>Стоимость по типам авто:</label>
+                        <input type="date" id="rep-cost-start">
+                        <input type="date" id="rep-cost-end">
+                        <button onclick="downloadReport('cost')">Скачать TXT</button>
+                    </div>
+                    <div>
+                        <label>Топ-5 мастеров за месяц:</label>
+                        <input type="number" id="rep-top-year" placeholder="Год (2026)">
+                        <input type="number" id="rep-top-month" placeholder="Месяц (1-12)">
+                        <button onclick="downloadReport('top')">Скачать TXT</button>
+                    </div
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
