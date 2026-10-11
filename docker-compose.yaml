@@ -1,51 +1,56 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: autoservice-db
+    container_name: postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: coursework
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: autoservice
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d autoservice"]
       interval: 5s
       timeout: 5s
       retries: 5
+    ports:
+      - "5432:5432"
 
   migrator:
-    build: ./migrator
     container_name: autoservice-migrator
+    build:
+      context: ./migrator
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: autoservice
+      POSTGRES_SSL_MODE: disable
+    entrypoint: ["./migrator"]
+    command: ["up", "-c", "config.yaml"]
     depends_on:
       postgres:
         condition: service_healthy
-    environment:
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: coursework
 
   backend:
+    container_name: autoservice-backend
     build:
       context: .
       dockerfile: backend/Dockerfile
-    container_name: autoservice-backend
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: autoservice
+      POSTGRES_SSL_MODE: disable
+      APP_PORT: "8080"
+    ports:
+      - "8080:8080"
     depends_on:
       migrator:
         condition: service_completed_successfully
-    ports:
-      - "8080:8080"
-    environment:
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: coursework
-      APP_PORT: 8080
 
 volumes:
   postgres_data:
