@@ -15,7 +15,6 @@ async function login() {
             document.getElementById('app-view').classList.remove('hidden');
             document.getElementById('user-role').textContent = currentUser.role === 'admin' ? 'Администратор' : 'Оператор';
             
-            // Показываем элементы управления только админу
             const isAdmin = currentUser.role === 'admin';
             document.getElementById('admin-cars').classList.toggle('hidden', !isAdmin);
             document.getElementById('admin-masters').classList.toggle('hidden', !isAdmin);
@@ -56,7 +55,6 @@ async function loadTable(url, tableId, renderFn) {
     tbody.innerHTML = data.map(renderFn).join('');
 }
 
-// --- CARS ---
 function renderCarRow(c) {
     const delBtn = currentUser.role === 'admin' ? `<button class="danger" onclick="deleteItem('/api/cars', ${c.id}, loadAll)">Удалить</button>` : '-';
     return `<tr><td>${c.num}</td><td>${c.mark}</td><td>${c.color}</td><td>${c.is_foreign ? 'Иномарка' : 'Отеч.'}</td><td>${delBtn}</td></tr>`;
@@ -71,7 +69,6 @@ async function addCar() {
     await postAndReload('/api/cars', body, loadAll);
 }
 
-// --- MASTERS ---
 function renderMasterRow(m) {
     const delBtn = currentUser.role === 'admin' ? `<button class="danger" onclick="deleteItem('/api/masters', ${m.id}, loadAll)">Удалить</button>` : '-';
     return `<tr><td>${m.id}</td><td>${m.name}</td><td>${delBtn}</td></tr>`;
@@ -80,7 +77,6 @@ async function addMaster() {
     await postAndReload('/api/masters', {name: document.getElementById('master-name').value}, loadAll);
 }
 
-// --- SERVICES ---
 function renderServiceRow(s) {
     const delBtn = currentUser.role === 'admin' ? `<button class="danger" onclick="deleteItem('/api/services', ${s.id}, loadAll)">Удалить</button>` : '-';
     return `<tr><td>${s.name}</td><td>${s.cost_our}</td><td>${s.cost_foreign}</td><td>${delBtn}</td></tr>`;
@@ -94,7 +90,6 @@ async function addService() {
     await postAndReload('/api/services', body, loadAll);
 }
 
-// --- WORKS ---
 function renderWorkRow(w) {
     const delBtn = currentUser.role === 'admin' ? `<button class="danger" onclick="deleteItem('/api/works', ${w.id}, loadAll)">Удалить</button>` : '-';
     return `<tr><td>${w.date_work}</td><td>${w.master_id}</td><td>${w.car_id}</td><td>${w.service_id}</td><td>${delBtn}</td></tr>`;
@@ -122,7 +117,6 @@ async function addWork() {
     await postAndReload('/api/works', body, loadAll);
 }
 
-// --- REPORTS ---
 function downloadReport(type) {
     if (type === 'cost') {
         const start = document.getElementById('rep-cost-start').value;
@@ -135,7 +129,6 @@ function downloadReport(type) {
     }
 }
 
-// --- HELPERS ---
 async function postAndReload(url, body, reloadFn) {
     const res = await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
     if (res.ok) { reloadFn(); } else { alert('Ошибка: ' + await res.text()); }

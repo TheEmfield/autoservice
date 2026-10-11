@@ -70,7 +70,6 @@ func DeleteCar(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// --- MASTERS ---
 func GetMasters(w http.ResponseWriter, r *http.Request) {
 	masters, err := database.GetAllMasters()
 	if err != nil {
@@ -103,7 +102,6 @@ func DeleteMaster(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// --- SERVICES ---
 func GetServices(w http.ResponseWriter, r *http.Request) {
 	services, err := database.GetAllServices()
 	if err != nil {
@@ -136,7 +134,6 @@ func DeleteService(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// --- WORKS ---
 func GetWorks(w http.ResponseWriter, r *http.Request) {
 	works, err := database.GetAllWorks()
 	if err != nil {
@@ -169,7 +166,6 @@ func DeleteWork(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// --- REPORTS ---
 func ReportCostByType(w http.ResponseWriter, r *http.Request) {
 	start := r.URL.Query().Get("start")
 	end := r.URL.Query().Get("end")

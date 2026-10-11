@@ -20,7 +20,6 @@ func main() {
 	}
 	defer database.DB.Close()
 
-	// API маршруты
 	http.HandleFunc("/api/login", handlers.Login)
 
 	http.HandleFunc("/api/cars", methodRouter(handlers.GetCars, handlers.CreateCar, handlers.DeleteCar))
@@ -28,19 +27,15 @@ func main() {
 	http.HandleFunc("/api/services", methodRouter(handlers.GetServices, handlers.CreateService, handlers.DeleteService))
 	http.HandleFunc("/api/works", methodRouter(handlers.GetWorks, handlers.CreateWork, handlers.DeleteWork))
 
-	// Отчеты
 	http.HandleFunc("/api/reports/cost", handlers.ReportCostByType)
 	http.HandleFunc("/api/reports/top-masters", handlers.ReportTopMasters)
 
-	// Раздача статики (папка web теперь внутри контейнера по пути ./web)
 	fs := http.FileServer(http.Dir("./web"))
 	http.Handle("/", fs)
 
-	log.Printf("✅ Сервер запущен! Открой в браузере: http://localhost:%s", cfg.App.Port)
 	log.Fatal(http.ListenAndServe(":"+cfg.App.Port, nil))
 }
 
-// Хелпер для роутинга по методам
 func methodRouter(get, post, delete http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
