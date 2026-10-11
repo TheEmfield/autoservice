@@ -1,6 +1,6 @@
 INSERT INTO users (username, password_hash, role) VALUES 
-('admin', '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGfa3ZlW', 'admin'),
-('operator', '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGfa3ZlW', 'operator');
+('admin', '$2a$10$n.WN1fvTQLMMcIKgJ2rQGufLZln6dhsMgCLNLhgz2YXN/ipLkvARW', 'admin'),
+('operator', '$2a$10$n.WN1fvTQLMMcIKgJ2rQGufLZln6dhsMgCLNLhgz2YXN/ipLkvARW', 'operator');
 
 INSERT INTO masters (name) VALUES 
 ('Иванов Иван Иванович'),

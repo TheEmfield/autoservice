@@ -27,14 +27,15 @@ func Connect(cfg *config.Config) error {
 
 func Authenticate(username, password string) (*models.User, error) {
 	var user models.User
-	var hash string
 	err := DB.Get(&user, "SELECT id, username, role, password_hash FROM users WHERE username=$1", username)
 	if err != nil {
 		return nil, fmt.Errorf("пользователь не найден")
 	}
-	if err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)); err != nil {
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
 		return nil, fmt.Errorf("неверный пароль")
 	}
+
 	return &user, nil
 }
 
