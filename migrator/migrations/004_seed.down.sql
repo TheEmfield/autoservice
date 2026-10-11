@@ -1,0 +1,5 @@
+DELETE FROM works;
+DELETE FROM cars;
+DELETE FROM services;
+DELETE FROM masters;
+DELETE FROM users;
