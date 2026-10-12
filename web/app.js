@@ -56,8 +56,20 @@ async function loadTable(url, tableId, renderFn) {
 }
 
 function renderCarRow(c) {
-    const delBtn = currentUser.role === 'admin' ? `<button class="danger" onclick="deleteItem('/api/cars', ${c.id}, loadAll)">Удалить</button>` : '-';
-    return `<tr><td>${c.num}</td><td>${c.mark}</td><td>${c.color}</td><td>${c.is_foreign ? 'Иномарка' : 'Отеч.'}</td><td>${delBtn}</td></tr>`;
+    const editBtn = currentUser.role === 'admin' ? `<button onclick="editCar(${c.id}, '${c.num}', '${c.mark}', '${c.color}', ${c.is_foreign})" style="margin-right:5px;">Изменить</button>` : '';
+    const delBtn = currentUser.role === 'admin' ? `<button class="danger" onclick="deleteItem('/api/cars', ${c.id}, loadAll)">Удалить</button>` : '';
+    return `<tr><td>${c.num}</td><td>${c.mark}</td><td>${c.color}</td><td>${c.is_foreign ? 'Иномарка' : 'Отеч.'}</td><td>${editBtn}${delBtn}</td></tr>`;
+}
+
+async function editCar(id, num, mark, color, isForeign) {
+    const body = {
+        num: prompt('Номер:', num) || num,
+        mark: prompt('Марка:', mark) || mark,
+        color: prompt('Цвет:', color) || color,
+        is_foreign: parseInt(prompt('Иномарка (1 - да, 0 - нет):', isForeign)) || isForeign
+    };
+    const res = await fetch(`/api/cars?id=${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+    res.ok ? loadAll() : alert('Ошибка: ' + await res.text());
 }
 async function addCar() {
     const body = {
@@ -70,16 +82,35 @@ async function addCar() {
 }
 
 function renderMasterRow(m) {
-    const delBtn = currentUser.role === 'admin' ? `<button class="danger" onclick="deleteItem('/api/masters', ${m.id}, loadAll)">Удалить</button>` : '-';
-    return `<tr><td>${m.id}</td><td>${m.name}</td><td>${delBtn}</td></tr>`;
+    const editBtn = currentUser.role === 'admin' ? `<button onclick="editMaster(${m.id}, '${m.name}')" style="margin-right:5px;">Изменить</button>` : '';
+    const delBtn = currentUser.role === 'admin' ? `<button class="danger" onclick="deleteItem('/api/masters', ${m.id}, loadAll)">Удалить</button>` : '';
+    return `<tr><td>${m.id}</td><td>${m.name}</td><td>${editBtn}${delBtn}</td></tr>`;
+}
+
+async function editMaster(id, name) {
+    const newName = prompt('ФИО Мастера:', name);
+    if (!newName) return;
+    const res = await fetch(`/api/masters?id=${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name: newName}) });
+    res.ok ? loadAll() : alert('Ошибка: ' + await res.text());
 }
 async function addMaster() {
     await postAndReload('/api/masters', {name: document.getElementById('master-name').value}, loadAll);
 }
 
 function renderServiceRow(s) {
-    const delBtn = currentUser.role === 'admin' ? `<button class="danger" onclick="deleteItem('/api/services', ${s.id}, loadAll)">Удалить</button>` : '-';
-    return `<tr><td>${s.name}</td><td>${s.cost_our}</td><td>${s.cost_foreign}</td><td>${delBtn}</td></tr>`;
+    const editBtn = currentUser.role === 'admin' ? `<button onclick="editService(${s.id}, '${s.name}', ${s.cost_our}, ${s.cost_foreign})" style="margin-right:5px;">Изменить</button>` : '';
+    const delBtn = currentUser.role === 'admin' ? `<button class="danger" onclick="deleteItem('/api/services', ${s.id}, loadAll)">Удалить</button>` : '';
+    return `<tr><td>${s.name}</td><td>${s.cost_our}</td><td>${s.cost_foreign}</td><td>${editBtn}${delBtn}</td></tr>`;
+}
+
+async function editService(id, name, costOur, costForeign) {
+    const body = {
+        name: prompt('Название:', name) || name,
+        cost_our: parseFloat(prompt('Цена (Отеч.):', costOur)) || costOur,
+        cost_foreign: parseFloat(prompt('Цена (Ином.):', costForeign)) || costForeign
+    };
+    const res = await fetch(`/api/services?id=${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+    res.ok ? loadAll() : alert('Ошибка: ' + await res.text());
 }
 async function addService() {
     const body = {
@@ -91,8 +122,15 @@ async function addService() {
 }
 
 function renderWorkRow(w) {
-    const delBtn = currentUser.role === 'admin' ? `<button class="danger" onclick="deleteItem('/api/works', ${w.id}, loadAll)">Удалить</button>` : '-';
-    return `<tr><td>${w.date_work}</td><td>${w.master_id}</td><td>${w.car_id}</td><td>${w.service_id}</td><td>${delBtn}</td></tr>`;
+    const editBtn = currentUser.role === 'admin' ? `<button onclick="editWork(${w.id}, '${w.date_work}', ${w.master_id}, ${w.car_id}, ${w.service_id})" style="margin-right:5px;">Изменить</button>` : '';
+    const delBtn = currentUser.role === 'admin' ? `<button class="danger" onclick="deleteItem('/api/works', ${w.id}, loadAll)">Удалить</button>` : '';
+    return `<tr>
+        <td>${w.date_work}</td>
+        <td>${w.master_id}</td>
+        <td>${w.car_id}</td>
+        <td>${w.service_id}</td>
+        <td>${editBtn}${delBtn}</td>
+    </tr>`;
 }
 async function loadSelects() {
     const masters = await (await fetch('/api/masters')).json();
@@ -106,6 +144,21 @@ async function loadSelects() {
 function fillSelect(id, data, valKey, textKey) {
     const sel = document.getElementById(id);
     sel.innerHTML = '<option value="">Выберите...</option>' + data.map(d => `<option value="${d[valKey]}">${d[textKey]}</option>`).join('');
+}
+
+async function editWork(id, dateWork, masterId, carId, serviceId) {
+    const body = {
+        date_work: prompt('Дата (ГГГГ-ММ-ДД):', dateWork) || dateWork,
+        master_id: parseInt(prompt('ID мастера:', masterId)) || masterId,
+        car_id: parseInt(prompt('ID автомобиля:', carId)) || carId,
+        service_id: parseInt(prompt('ID услуги:', serviceId)) || serviceId
+    };
+    const res = await fetch(`/api/works?id=${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+    if (res.ok) {
+        loadAll();
+    } else {
+        alert('Ошибка обновления (возможно, сработал триггер БД): ' + await res.text());
+    }
 }
 async function addWork() {
     const body = {

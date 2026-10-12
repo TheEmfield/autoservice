@@ -209,3 +209,59 @@ func ReportTopMasters(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Мастер: %-30s | Работ: %d\n", rep.MasterName, rep.WorksCount)
 	}
 }
+
+func UpdateCar(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	var c models.Car
+	if err := json.NewDecoder(r.Body).Decode(&c); err != nil {
+		http.Error(w, "Неверный запрос", http.StatusBadRequest)
+		return
+	}
+	if err := database.UpdateCar(id, c); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func UpdateMaster(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	var m models.Master
+	if err := json.NewDecoder(r.Body).Decode(&m); err != nil {
+		http.Error(w, "Неверный запрос", http.StatusBadRequest)
+		return
+	}
+	if err := database.UpdateMaster(id, m); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func UpdateService(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	var s models.Service
+	if err := json.NewDecoder(r.Body).Decode(&s); err != nil {
+		http.Error(w, "Неверный запрос", http.StatusBadRequest)
+		return
+	}
+	if err := database.UpdateService(id, s); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func UpdateWork(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	var wk models.Work
+	if err := json.NewDecoder(r.Body).Decode(&wk); err != nil {
+		http.Error(w, "Неверный запрос", http.StatusBadRequest)
+		return
+	}
+	if err := database.UpdateWork(id, wk); err != nil {
+		http.Error(w, "Ошибка БД (возможно, сработал триггер): "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

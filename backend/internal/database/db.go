@@ -97,8 +97,9 @@ func DeleteWork(id int) error {
 }
 
 type CostReport struct {
-	CarType   string  `db:"car_type"`
-	TotalCost float64 `db:"total_cost"`
+	CarType    string  `db:"car_type"`
+	TotalCost  float64 `db:"total_cost"`
+	WorksCount int64   `db:"works_count"`
 }
 
 func GetCostByType(startDate, endDate string) ([]CostReport, error) {
@@ -111,6 +112,7 @@ func GetCostByType(startDate, endDate string) ([]CostReport, error) {
 type TopMasterReport struct {
 	MasterName string `db:"master_name"`
 	WorksCount int64  `db:"works_count"`
+	CarsCount  int64  `db:"cars_count"`
 }
 
 func GetTopMasters(year, month int) ([]TopMasterReport, error) {
@@ -118,4 +120,28 @@ func GetTopMasters(year, month int) ([]TopMasterReport, error) {
 	query := `SELECT * FROM get_top_5_masters_by_month($1, $2)`
 	err := DB.Select(&reports, query, year, month)
 	return reports, err
+}
+
+func UpdateCar(id int, c models.Car) error {
+	_, err := DB.NamedExec(`UPDATE cars SET num=:num, color=:color, mark=:mark, is_foreign=:is_foreign WHERE id=:id`,
+		map[string]interface{}{"id": id, "num": c.Num, "color": c.Color, "mark": c.Mark, "is_foreign": c.IsForeign})
+	return err
+}
+
+func UpdateMaster(id int, m models.Master) error {
+	_, err := DB.NamedExec(`UPDATE masters SET name=:name WHERE id=:id`,
+		map[string]interface{}{"id": id, "name": m.Name})
+	return err
+}
+
+func UpdateService(id int, s models.Service) error {
+	_, err := DB.NamedExec(`UPDATE services SET name=:name, cost_our=:cost_our, cost_foreign=:cost_foreign WHERE id=:id`,
+		map[string]interface{}{"id": id, "name": s.Name, "cost_our": s.CostOur, "cost_foreign": s.CostForeign})
+	return err
+}
+
+func UpdateWork(id int, w models.Work) error {
+	_, err := DB.NamedExec(`UPDATE works SET date_work=:date_work, master_id=:master_id, car_id=:car_id, service_id=:service_id WHERE id=:id`,
+		map[string]interface{}{"id": id, "date_work": w.DateWork, "master_id": w.MasterID, "car_id": w.CarID, "service_id": w.ServiceID})
+	return err
 }

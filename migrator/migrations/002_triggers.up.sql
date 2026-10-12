@@ -36,6 +36,7 @@ EXECUTE FUNCTION check_masters_count();
 
 
 
+-- 1. Обновляем функцию триггера
 CREATE OR REPLACE FUNCTION check_master_daily_works()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -45,16 +46,17 @@ BEGIN
         SELECT 1 FROM works 
         WHERE works.master_id = NEW.master_id 
           AND works.date_work = NEW.date_work
+          AND works.id != NEW.id
     ) THEN
-        RAISE EXCEPTION 'Мастер (id=%) уже выполнил работу в день %!', 
-            NEW.master_id, NEW.date_work;
+        RAISE EXCEPTION 'Мастер уже выполнил работу в этот день!';
     END IF;
     RETURN NEW;
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trigger_master_daily_works ON works;
 CREATE TRIGGER trigger_master_daily_works
-BEFORE INSERT ON works
+BEFORE INSERT OR UPDATE ON works
 FOR EACH ROW
 EXECUTE FUNCTION check_master_daily_works();
 
