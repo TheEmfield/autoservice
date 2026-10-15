@@ -36,7 +36,6 @@ EXECUTE FUNCTION check_masters_count();
 
 
 
--- 1. Обновляем функцию триггера
 CREATE OR REPLACE FUNCTION check_master_daily_works()
 RETURNS TRIGGER
 LANGUAGE plpgsql
